@@ -1,0 +1,31 @@
+# Grouping the Data
+data <- td %>%
+    group_by(Week) %>%
+    arrange(-Duration) %>%
+    mutate(rank=row_number()) %>%
+    filter(rank<=10)
+# Main plot code
+p = data %>%
+ggplot(aes(x = -rank,y = Duration, group = Topic)) +
+        geom_tile(aes(y = Duration / 2, height = Duration, fill = Topic), width = 0.9) +
+        geom_text(aes(label = Topic), hjust = "right", colour = "black", fontface = "bold", nudge_y = -100) +
+        geom_text(aes(label = scales::comma(Duration)), hjust = "left", nudge_y = 10000, colour = "grey30") +
+        coord_flip(clip="off") +
+        scale_fill_manual(name = 'Topic', values = c("#66c2a5", "#fc8d62", "#8da0cb", "#e78ac3","#3366cc","#679fc3")) +
+        scale_x_discrete("") +
+        scale_y_continuous("",labels=scales::comma) +
+        hrbrthemes::theme_ipsum(plot_title_size = 24, subtitle_size = 18, caption_size = 16, base_size = 16) +
+        theme(panel.grid.major.y=element_blank(),
+              panel.grid.minor.x=element_blank(),
+              legend.position = c(0.4, 0.2),
+              plot.margin = margin(1,1,1,2,"cm"),
+              axis.text.y=element_blank()) +
+        # gganimate code to transition by year:
+        transition_time(Week) +
+        ease_aes('cubic-in-out') +
+        labs(title='Conversation Duration by Topics',
+             subtitle='Duration by Week {round(frame_time,0)}',
+             caption='Source: Conversational Data
+skappal / @Data Dojo')
+
+animate(p, nframes=750,fps = 15, end_pause = 60, width = 1200, height = 900)
